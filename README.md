@@ -1,5 +1,7 @@
-# ARMTemplates
+# Provision a web app with a SQL Database
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https://github.com/Kothakapu/ARMTemplates/blob/Kothakapu-ARM-Bot/azuredeploy-Bot.json" rel="nofollow">
-    <img src="https://camo.githubusercontent.com/9285dd3998997a0835869065bb15e5d500475034/687474703a2f2f617a7572656465706c6f792e6e65742f6465706c6f79627574746f6e2e706e67" data-canonical-src="http://azuredeploy.net/deploybutton.png" style="max-width:100%;">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https://github.com/Kothakapu/ARMTemplates/blob/Kothakapu-ARM-WebSql/azuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
+
+This sample creates a free Azure Web App and SQL Database at the "Basic" service level.  The template can support other tiers of service, details for each service can be found here:
