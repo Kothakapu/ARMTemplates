@@ -1,272 +1,345 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    
-    "newappserviceplanName": {
+    "Environment": {
       "type": "string",
-      "minLength": 1
+      "defaultValue": "prod"
     },
-    "newappserviceplanSkuName": {
+    "Bot- Id": {
+      "type": "string"
+    },
+    "Location": {
+      "type": "string"
+    },
+    "SKU": {
+      "type": "string"
+    },
+    "Kind": {
+      "type": "string"
+    },
+    "Web App- Name": {
+      "type": "string"
+    },
+    "Create new storage": {
+      "type": "bool"
+    },
+    "Storage account- Name": {
+      "type": "string"
+    },
+    "Storage account- Resource id": {
       "type": "string",
-      "defaultValue": "F1", 
-      "allowedValues": [
-        "F1",
-        "D1",
-        "B1",
-        "B2",
-        "B3",
-        "S1",
-        "S2",
-        "S3",
-        "P1",
-        "P2",
-        "P3",
-        "P4"
-      ],
-      "metadata": {
-        "description": "Describes plan's pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+      "defaultValue": ""
+    },
+    "App id": {
+      "type": "string",
+      "defaultValue": "1234"
+    },
+    "App secret": {
+      "type": "string",
+      "defaultValue": "blank"
+    },
+    "DirectLineSecret": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "Zip url": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "Proactive zip url": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "Use app insights": {
+      "type": "bool"
+    },
+    "App insights- Location": {
+      "type": "string"
+    },
+    "Server farm- Id": {
+      "type": "string"
+    },
+    "Create server farm": {
+      "type": "bool"
+    },
+    "Server farm- Location": {
+      "type": "string",
+      "defaultValue": ""
+    },
+    "Server farm- SKU": {
+      "type": "object",
+      "defaultValue": {
+        "name": "S1",
+        "tier": "Standard",
+        "size": "S1",
+        "family": "S",
+        "capacity": 1
       }
     },
-    "newstorageaccountType": {
+    "Endpoint": {
       "type": "string",
-      "defaultValue": "Standard_LRS",
-      "allowedValues": [
-        "Standard_LRS",
-        "Standard_ZRS",
-        "Standard_GRS",
-        "Standard_RAGRS",
-        "Premium_LRS"
-      ],
-      "metadata": {
-        "description":"Please enter the storage account type. Choose from the allowed values."
-      }
-      
+      "defaultValue": ""
     },
-    "newrediscacheName": {
+    "LUIS api- Location": {
       "type": "string",
-      "minLength": 1
+      "defaultValue": "Global"
     },
-    "newrediscacheSKUName": {
+    "Bot file- Encryption key": {
       "type": "string",
-      "allowedValues": [
-        "Basic",
-        "Standard"
-      ],
-      "defaultValue": "Standard"
-    },
-    "newrediscacheSKUFamily": {
-      "type": "string",
-      "allowedValues": [
-        "C"
-      ],
-      "defaultValue": "C"
-    },
-    "newrediscacheSKUCapacity": {
-      "type": "int",
-      "allowedValues": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
-      ],
-      "defaultValue": 0
-    },
-    "newrediscacheRedisVersion": {
-      "type": "string",
-      "allowedValues": [
-        "2.8"
-      ],
-      "defaultValue": "2.8"
-    },
-    "nayawaalaserverAdminLogin": {
-      "type": "string",
-      "minLength": 1
-    },
-    "nayawaalaserverAdminLoginPassword": {
-      "type": "securestring"
-    },
-    "newdbfordemoName": {
-      "type": "string",
-      "minLength": 1
-    },
-    "newdbfordemoCollation": {
-      "type": "string",
-      "minLength": 1,
-      "defaultValue": "SQL_Latin1_General_CP1_CI_AS"
-    },
-    "newdbfordemoEdition": {
-      "type": "string",
-      "defaultValue": "Basic",
-      "allowedValues": [
-        "Basic",
-        "Standard",
-        "Premium"
-      ]
-    },
-    "newdbfordemoRequestedServiceObjectiveName": {
-      "type": "string",
-      "defaultValue": "Basic",
-      "allowedValues": [
-        "Basic",
-        "S0",
-        "S1",
-        "S2",
-        "P1",
-        "P2",
-        "P3"
-      ],
-      "metadata": {
-        "description": "Describes the performance level for Edition"
-      }
-    },
-	"name": {
-            "type": "string"
-        },
-        "location": {
-            "type": "string"
-        },
-        "apiType": {
-            "type": "string"
-        },
-        "sku": {
-            "type": "string"
-        }
+      "defaultValue": ""
+    }
   },
   "variables": {
-    "newwebapppName": "NayWaalWebApp", // Please enter the name of Webapp
-    "newstorageaccountName": "nayastoracc", // Please enter the name of Storage account
-    "nayawaalaserverName": "[concat('nayawaalaserver', uniqueString(resourceGroup().id))]"
+    "storageAccountType": "Standard_LRS",
+    "storageAccountId": "[if(or(parameters('Create new storage'), equals('', parameters('Storage account- Resource id'))), resourceId('Microsoft.Storage/storageAccounts', parameters('Storage account- Name')), parameters('Storage account- Resource id'))]",
+    "serverFarmName": "[last(split(parameters('Server farm- Id'), '/'))]",
+    "myWorkerSize": 0,
+    "proactiveFunctionName": "[concat(parameters('Web App- Name'), '-function')]",
+    "insightsName": "[concat(parameters('Bot- Id'), substring(uniqueString(resourceGroup().id), 0, 6))]",
+    "config": {
+      "scratch": {
+        "stateEndpoint": "https://intercom-api-scratch.azurewebsites.net",
+        "azureWebJobsBotFrameworkDirectLineEndpoint": "https://directline.scratch.botframework.com/",
+        "openIdMetadata": "https://intercom-api-ppe.azurewebsites.net/v1/.well-known/openidconfiguration"
+      },
+      "ppe": {
+        "stateEndpoint": "https://intercom-api-ppe.azurewebsites.net",
+        "azureWebJobsBotFrameworkDirectLineEndpoint": "https://directline.ppe.botframework.com/",
+        "openIdMetadata": "https://intercom-api-ppe.azurewebsites.net/v1/.well-known/openidconfiguration"
+      },
+      "prod": {
+        "stateEndpoint": "",
+        "azureWebJobsBotFrameworkDirectLineEndpoint": "https://directline.botframework.com/",
+        "openIdMetadata": ""
+      },
+      "usgovppe": {
+        "stateEndpoint": "",
+        "azureWebJobsBotFrameworkDirectLineEndpoint": "https://directline.ppe.botframework.azure.us/",
+        "openIdMetadata": "https://api.ppe.botframework.azure.us/v1/.well-known/openidconfigurationn"
+      },
+      "usgovprd": {
+        "stateEndpoint": "",
+        "azureWebJobsBotFrameworkDirectLineEndpoint": "https://directline.botframework.azure.us/",
+        "openIdMetadata": "https://api.botframework.azure.us/v1/.well-known/openidconfiguration"
+      }
+    },
+    "botAppKinds": {
+      "function": "functionapp",
+      "sdk": "app",
+      "designer": "app",
+      "bot": ""
+    },
+    "botAppKind": "[variables('botAppKinds')[parameters('kind')]]",
+    "currentConfig": "[variables('config')[toLower(parameters('Environment'))]]",
+    "siteHost": "[concat(parameters('Web App- Name'), '.azurewebsites.net')]",
+    "botEndpointConfig": {
+      "bot": "[parameters('endpoint')]",
+      "sdk": "[concat('https://', variables('siteHost'), '/api/messages')]",
+      "designer": "[concat('https://', variables('siteHost'), '/api/messages')]",
+      "function": "[concat('https://', variables('siteHost'), '/api/messages?code=', 'NYI')]"
+    },
+    "botEndpoint": "[variables('botEndpointConfig')[parameters('kind')]]",
+    "luisApiName": "",
+    "luisApiResId": "[resourceId('Microsoft.CognitiveServices/accounts/', variables('luisApiName'))]"
   },
   "resources": [
     {
-      "name": "[parameters('newappserviceplanName')]",
-      "type": "Microsoft.Web/serverfarms",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2015-08-01",
+      "name": "[if(equals('', variables('luisApiName')), 'nosuch', variables('luisApiName'))]",
+      "apiVersion": "2017-04-18",
+      "condition": "[not(equals(variables('luisApiName'), ''))]",
+      "type": "Microsoft.CognitiveServices/accounts",
+      "location": "[parameters('LUIS api- Location')]",
       "sku": {
-        "name": "[parameters('newappserviceplanSkuName')]"
+        "name": "F0"
       },
-      "dependsOn": [],
-      "tags": {
-        "displayName": "newappserviceplan"
-      },
-      "properties": {
-        "name": "[parameters('newappserviceplanName')]",
-        "numberOfWorkers": 1
-      }
+      "kind": "LUIS",
+      "properties": {}
     },
     {
-      "name": "[variables('newwebapppName')]",
-      "type": "Microsoft.Web/sites",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2015-08-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('newappserviceplanName'))]"
-      ],
-      "tags": {
-        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('newappserviceplanName')))]": "Resource",
-        "displayName": "newwebappp"
-      },
-      "properties": {
-        "name": "[variables('newwebapppName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('newappserviceplanName'))]"
-      }
-    },
-    {
-      "name": "[variables('newstorageaccountName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2016-01-01",
-      "sku": {
-        "name": "[parameters('newstorageaccountType')]"
-      },
-      "dependsOn": [ ],
-      "tags": {
-        "displayName": "newstorageaccount"
-      },
-      "kind": "Storage"
-    },
-    {
-      "name": "[parameters('newrediscacheName')]",
-      "type": "Microsoft.Cache/Redis",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2016-04-01",
-      "dependsOn": [ ],
-      "tags": {
-        "displayName": "newrediscache"
-      },
+      "condition": "[parameters('Create new storage')]",
+      "name": "[parameters('Storage account- Name')]",
+      "apiVersion": "2015-05-01-preview",
+      "location": "[parameters('location')]",
       "properties": {
-        "sku": {
-          "name": "[parameters('newrediscacheSKUName')]",
-          "family": "[parameters('newrediscacheSKUFamily')]",
-          "capacity": "[parameters('newrediscacheSKUCapacity')]"
-        },
-        "redisVersion": "[parameters('newrediscacheRedisVersion')]"
+        "accountType": "[variables('storageAccountType')]"
       }
     },
     {
-      "name": "[variables('nayawaalaserverName')]",
-      "type": "Microsoft.Sql/servers",
-      "location": "[resourceGroup().location]",
-      "apiVersion": "2014-04-01-preview",
-      "dependsOn": [ ],
-      "tags": {
-        "displayName": "nayawaalaserver"
-      },
+      "type": "Microsoft.Web/serverfarms",
+      "condition": "[parameters('Create server farm')]",
+      "name": "[variables('serverFarmName')]",
+      "apiVersion": "2016-09-01",
+      "location": "[parameters('Server farm- Location')]",
+      "sku": "[parameters('Server farm- SKU')]",
       "properties": {
-        "administratorLogin": "[parameters('nayawaalaserverAdminLogin')]",
-        "administratorLoginPassword": "[parameters('nayawaalaserverAdminLoginPassword')]"
+        "name": "[variables('serverFarmName')]"
+      }
+    },
+    {
+      "name": "[parameters('Web App- Name')]",
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2015-08-01",
+      "condition": "[not(equals(parameters('Zip url'), ''))]",
+      "location": "[parameters('location')]",
+      "kind": "[variables('botAppKind')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/', parameters('Storage account- Name'))]"
+      ],
+      "properties": {
+        "name": "[parameters('Web App- Name')]",
+        "serverFarmId": "[parameters('Server farm- Id')]",
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('Storage account- Name'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+            },
+            {
+              "name": "AzureWebJobsDashboard",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('Storage account- Name'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+            },
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "8.9.4"
+            },
+            {
+              "name": "botFilePath",
+              "value": "[concat('./', parameters('Bot- Id'), '.bot')]"
+            },
+            {
+              "name": "botFileSecret",
+              "value": "[parameters('Bot file- Encryption key')]"
+            }
+          ],
+          "cors": {
+            "allowedOrigins": [
+              "https://botservice.hosting.portal.azure.net",
+              "https://hosting.onecloud.azure-test.net/"
+            ]
+          }
+        }
       },
       "resources": [
         {
-          "name": "AllowAllWindowsAzureIps",
-          "type": "firewallrules",
-          "location": "[resourceGroup().location]",
-          "apiVersion": "2014-04-01-preview",
+          "name": "MSDeploy",
+          "type": "Extensions",
+          "apiVersion": "2015-02-01",
+          "condition": "[not(equals(parameters('Zip url'), ''))]",
           "dependsOn": [
-            "[resourceId('Microsoft.Sql/servers', variables('nayawaalaserverName'))]"
+            "[concat('Microsoft.Web/Sites/', parameters('Web App- Name'))]"
           ],
           "properties": {
-            "startIpAddress": "0.0.0.0",
-            "endIpAddress": "0.0.0.0"
+            "packageUri": "[parameters('Zip url')]",
+            "dbType": "None",
+            "connectionString": "",
+            "setParameters": {
+              "IIS Web Application Name": "[parameters('Web App- Name')]"
+            }
           }
-        },
-        {
-          "name": "[parameters('newdbfordemoName')]",
-          "type": "databases",
-          "location": "[resourceGroup().location]",
-          "apiVersion": "2014-04-01-preview",
-          "dependsOn": [
-            "[resourceId('Microsoft.Sql/servers', variables('nayawaalaserverName'))]"
-          ],
-          "tags": {
-            "displayName": "newdbfordemo"
-          },
-          "properties": {
-            "collation": "[parameters('newdbfordemoCollation')]",
-            "edition": "[parameters('newdbfordemoEdition')]",
-            "maxSizeBytes": "1073741824",
-            "requestedServiceObjectiveName": "[parameters('newdbfordemoRequestedServiceObjectiveName')]"
-          }
-        },
-		{
-            "apiVersion": "2017-04-18",
-            "name": "[parameters('name')]",
-            "location": "[parameters('location')]",
-            "type": "Microsoft.CognitiveServices/accounts",
-            "kind": "[parameters('apiType')]",
-            "sku": {
-                "name": "[parameters('sku')]"
-            },
-            "properties": {}
         }
       ]
+    },
+    {
+      "apiVersion": "2016-03-01",
+      "type": "Microsoft.Web/sites",
+      "condition": "[not(equals(parameters('Proactive zip url'), ''))]",
+      "name": "[variables('proactiveFunctionName')]",
+      "location": "[parameters('location')]",
+      "kind": "functionapp",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/', parameters('Storage account- Name'))]"
+      ],
+      "properties": {
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "AzureWebJobsDashboard",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('Storage account- Name'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('Storage account- Name'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('Storage account- Name'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[toLower(variables('proactiveFunctionName'))]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~1"
+            },
+            {
+              "name": "AzureWebJobsBotFrameworkDirectLineSecret",
+              "value": "[parameters('DirectLineSecret')]"
+            },
+            {
+              "name": "AzureWebJobsBotFrameworkDirectLineEndpoint",
+              "value": "[variables('currentConfig').azureWebJobsBotFrameworkDirectLineEndpoint]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "name": "MSDeploy",
+          "type": "Extensions",
+          "apiVersion": "2015-02-01",
+          "condition": "[not(equals(parameters('Proactive zip url'), ''))]",
+          "dependsOn": [
+            "[concat('Microsoft.Web/Sites/', variables('proactiveFunctionName'))]"
+          ],
+          "properties": {
+            "packageUri": "[parameters('Proactive zip url')]"
+          }
+        }
+      ]
+    },
+    {
+      "apiVersion": "2017-12-01",
+      "type": "Microsoft.BotService/botServices",
+      "name": "[parameters('Bot- Id')]",
+      "location": "global",
+      "kind": "[parameters('kind')]",
+      "sku": {
+        "name": "[parameters('sku')]"
+      },
+      "properties": {
+        "name": "[parameters('Bot- Id')]",
+        "displayName": "[parameters('Bot- Id')]",
+        "endpoint": "[variables('botEndpoint')]",
+        "msaAppId": "[parameters('App id')]",
+        "publishingCredentials": "[list(concat(resourceId('Microsoft.Web/Sites', parameters('Web App- Name')), '/config/publishingcredentials'), '2018-02-01')]",
+        "storageResourceId": "[variables('storageAccountId')]",
+        "parameters": "[union(deployment().properties.parameters, json(concat('{\"tenant\":{\"value\":\"', subscription().tenantId, '\"}}')), json(concat('{\"stateStorage\":{\"value\":\"DefaultEndpointsProtocol=https;AccountName=',parameters('Storage account- Name'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';\"}}')))]",
+        "allSettings": {
+          "AzureWebJobsStorage": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('Storage account- Name'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]",
+          "AzureWebJobsDashboard": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('Storage account- Name'),';AccountKey=',listkeys(variables('storageAccountId'), '2015-05-01-preview').key1,';')]",
+          "WEBSITE_NODE_DEFAULT_VERSION": "8.9.4",
+          "BotEnv": "[parameters('Environment')]",
+          "BotId": "[parameters('Bot- Id')]",
+          "MicrosoftAppId": "[parameters('App id')]",
+          "MicrosoftAppPassword": "[parameters('App secret')]",
+          "BotStateEndpoint": "[variables('currentConfig').stateEndpoint]",
+          "BotOpenIdMetadata": "[variables('currentConfig').openIdMetadata]",
+          "UseTableStorageForConversationState": "true",
+          "botFilePath": "[concat('./', parameters('Bot- Id'), '.bot')]",
+          "botFileSecret": "[parameters('Bot file- Encryption key')]",
+          "LuisAPIKey": "374ee135421e45db8420cbec05e02bd9",
+          "LuisAppId": "dab3bae8-e0f4-4ce2-ae5e-48acc5962edd",
+          "LuisAPIHostName": "westus.api.cognitive.microsoft.com"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/', parameters('Storage account- Name'))]",
+        "[resourceId('Microsoft.Web/sites/', parameters('Web App- Name'))]",
+        "MSDeploy"
+      ]
     }
-
-  ],
-"outputs": {}
+  ]
 }
