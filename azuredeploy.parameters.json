@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "newappserviceplanName": 
+    {
+      "value": "newappsplanz" // Please enter the name of the App service plan here
+    },
+    "newrediscacheName": {
+      "value": "newrediscachefordemo" // Please enter the name of the Redis Cache
+    },
+    "nayawaalaserverAdminLogin": {
+      "value": "vidyakdil" // Please enter the username of the server
+    },
+    "nayawaalaserverAdminLoginPassword": {
+      "value": "P@ssw0rd" // Please enter the password of the server
+    },
+    "newdbfordemoName": {
+      "value": "newdbfordemopurpose" // Please enter the name of the Database
+    }
+  }
+}
