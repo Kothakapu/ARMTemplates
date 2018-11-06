@@ -1,0 +1,249 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    
+    "newappserviceplanName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "newappserviceplanSkuName": {
+      "type": "string",
+      "defaultValue": "F1", 
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "metadata": {
+        "description": "Describes plan's pricing tier and capacity. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+      }
+    },
+    "newstorageaccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description":"Please enter the storage account type. Choose from the allowed values."
+      }
+      
+    },
+    "newrediscacheName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "newrediscacheSKUName": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Standard"
+      ],
+      "defaultValue": "Standard"
+    },
+    "newrediscacheSKUFamily": {
+      "type": "string",
+      "allowedValues": [
+        "C"
+      ],
+      "defaultValue": "C"
+    },
+    "newrediscacheSKUCapacity": {
+      "type": "int",
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "defaultValue": 0
+    },
+    "newrediscacheRedisVersion": {
+      "type": "string",
+      "allowedValues": [
+        "2.8"
+      ],
+      "defaultValue": "2.8"
+    },
+    "nayawaalaserverAdminLogin": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nayawaalaserverAdminLoginPassword": {
+      "type": "securestring"
+    },
+    "newdbfordemoName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "newdbfordemoCollation": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS"
+    },
+    "newdbfordemoEdition": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ]
+    },
+    "newdbfordemoRequestedServiceObjectiveName": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "S0",
+        "S1",
+        "S2",
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "metadata": {
+        "description": "Describes the performance level for Edition"
+      }
+    }
+  },
+  "variables": {
+    "newwebapppName": "NayWaalWebApp", // Please enter the name of Webapp
+    "newstorageaccountName": "nayastoracc", // Please enter the name of Storage account
+    "nayawaalaserverName": "[concat('nayawaalaserver', uniqueString(resourceGroup().id))]"
+  },
+  "resources": [
+    {
+      "name": "[parameters('newappserviceplanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "sku": {
+        "name": "[parameters('newappserviceplanSkuName')]"
+      },
+      "dependsOn": [],
+      "tags": {
+        "displayName": "newappserviceplan"
+      },
+      "properties": {
+        "name": "[parameters('newappserviceplanName')]",
+        "numberOfWorkers": 1
+      }
+    },
+    {
+      "name": "[variables('newwebapppName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('newappserviceplanName'))]"
+      ],
+      "tags": {
+        "[concat('hidden-related:', resourceId('Microsoft.Web/serverfarms', parameters('newappserviceplanName')))]": "Resource",
+        "displayName": "newwebappp"
+      },
+      "properties": {
+        "name": "[variables('newwebapppName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('newappserviceplanName'))]"
+      }
+    },
+    {
+      "name": "[variables('newstorageaccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-01-01",
+      "sku": {
+        "name": "[parameters('newstorageaccountType')]"
+      },
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "newstorageaccount"
+      },
+      "kind": "Storage"
+    },
+    {
+      "name": "[parameters('newrediscacheName')]",
+      "type": "Microsoft.Cache/Redis",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-04-01",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "newrediscache"
+      },
+      "properties": {
+        "sku": {
+          "name": "[parameters('newrediscacheSKUName')]",
+          "family": "[parameters('newrediscacheSKUFamily')]",
+          "capacity": "[parameters('newrediscacheSKUCapacity')]"
+        },
+        "redisVersion": "[parameters('newrediscacheRedisVersion')]"
+      }
+    },
+    {
+      "name": "[variables('nayawaalaserverName')]",
+      "type": "Microsoft.Sql/servers",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "nayawaalaserver"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('nayawaalaserverAdminLogin')]",
+        "administratorLoginPassword": "[parameters('nayawaalaserverAdminLoginPassword')]"
+      },
+      "resources": [
+        {
+          "name": "AllowAllWindowsAzureIps",
+          "type": "firewallrules",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('nayawaalaserverName'))]"
+          ],
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+          }
+        },
+        {
+          "name": "[parameters('newdbfordemoName')]",
+          "type": "databases",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('nayawaalaserverName'))]"
+          ],
+          "tags": {
+            "displayName": "newdbfordemo"
+          },
+          "properties": {
+            "collation": "[parameters('newdbfordemoCollation')]",
+            "edition": "[parameters('newdbfordemoEdition')]",
+            "maxSizeBytes": "1073741824",
+            "requestedServiceObjectiveName": "[parameters('newdbfordemoRequestedServiceObjectiveName')]"
+          }
+        }
+      ]
+    }
+
+  ],
+"outputs": {}
+}
