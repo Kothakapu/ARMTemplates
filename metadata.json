@@ -1,5 +1,5 @@
 {
-  "$schema": "https://aka.ms/azure-quickstart-templates-metadata-schema#",
+  "$schema": "https://aka.ms/azure-quickstart-templates-metadata-schemas#",
   "type": "QuickStart",
   "itemDisplayName": "BotCore",
   "description": "This template provisions a Web App, a SQL Database, AutoScale settings, Alert rules, and App Insights. It configures a connection string in the web app for the database.",
