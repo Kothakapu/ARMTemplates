@@ -3,7 +3,7 @@
   "type": "QuickStart",
   "itemDisplayName": "BotCore",
   "description": "This template provisions a Web App, a SQL Database, AutoScale settings, Alert rules, and App Insights. It configures a connection string in the web app for the database.",
-  "summary": "Provision a Web App with a SQL Database",
+  "summary": "BotCore",
   "githubUsername": "bmoore-msft",
   "dateUpdated": "2016-09-30"
 }
